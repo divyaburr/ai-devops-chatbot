@@ -1,6 +1,13 @@
-FAQ = {
-    "jenkins build command": "Use: mvn clean install OR npm install depending on project.",
-    "how to create branch": "git checkout -b feature/new-branch",
-    "pipeline fail reason": "Check console logs. Mostly lint, unit test, or dependency issue.",
-    "docker build": "docker build -t app:latest .",
+# devops_faq.py
+
+FAQS = {
+    "what is jenkins": "Jenkins is a CI/CD automation tool used to build, test, and deploy applications.",
+    "what is ci cd": "CI/CD stands for Continuous Integration and Continuous Deployment.",
+    "what is docker": "Docker is a containerization platform."
 }
+
+def get_faq_answer(query: str):
+    for q, ans in FAQS.items():
+        if q in query.lower():
+            return ans
+    return None
