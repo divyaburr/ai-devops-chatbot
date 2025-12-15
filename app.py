@@ -1,29 +1,35 @@
-from fastapi import FastAPI
-from dotenv import load_dotenv
 import os
+from fastapi import FastAPI
+from openai import OpenAI
 
-from devops_faq import get_faq_answer
-from jenkins_client import analyze_jenkins_issue
-
-load_dotenv()
-
+# Create FastAPI app
 app = FastAPI()
 
+# OpenAI client
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# Health check (VERY IMPORTANT for Jenkins)
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+# Chat endpoint
 @app.get("/chat")
 def chat(query: str):
+    if not query:
+        return {"error": "Query is empty"}
 
-    # 1️⃣ First try Jenkins logic
-    jenkins_answer = analyze_jenkins_issue(query)
-    if jenkins_answer:
-        return {"source": "jenkins", "answer": jenkins_answer}
-
-    # 2️⃣ Then try DevOps FAQ
-    faq_answer = get_faq_answer(query)
-    if faq_answer:
-        return {"source": "faq", "answer": faq_answer}
-
-    # 3️⃣ AI fallback (mock for now)
-    return {
-        "source": "ai-mock",
-        "answer": f"AI analysis pending for query: {query}"
-    }
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are an AI DevOps assistant."},
+                {"role": "user", "content": query}
+            ]
+        )
+        return {
+            "query": query,
+            "response": response.choices[0].message.content
+        }
+    except Exception as e:
+        return {"error": str(e)}
