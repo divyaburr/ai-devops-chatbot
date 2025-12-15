@@ -11,10 +11,12 @@ pipeline {
 
         stage('Start AI Server') {
             steps {
-                echo 'Starting AI Chatbot server...'
+                echo 'Starting AI Chatbot server in background...'
                 bat '''
-                REM Start Python server in a new window (non-blocking)
-                start "" cmd /c python app.py
+                REM Start FastAPI server using pythonw.exe (no console window)
+                start "" pythonw app.py
+                REM Wait a few seconds for server to start
+                ping 127.0.0.1 -n 6 > nul
                 '''
             }
         }
@@ -23,11 +25,11 @@ pipeline {
             steps {
                 echo 'Waiting for AI server to be ready...'
                 bat '''
-                REM Try connecting up to 10 times, wait 2 seconds between attempts
+                REM Poll server up to 10 times, 2 seconds between attempts
                 set SERVER_UP=0
                 for /L %%i in (1,1,10) do (
                     curl -s http://127.0.0.1:8000/chat?query=ping && set SERVER_UP=1 && goto :ready
-                    ping 127.0.0.1 -n 3 > nul
+                    ping 127.0.0.1 -n 2 > nul
                 )
                 :ready
                 if "%SERVER_UP%"=="0" (
