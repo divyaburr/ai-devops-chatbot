@@ -1,21 +1,28 @@
-import openai
-import os
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from dotenv import load_dotenv
+import os
+from openai import OpenAI
 
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
-print("LOADED KEY:", openai.api_key)
 
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 app = FastAPI()
 
 @app.get("/chat")
 def chat(query: str):
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "user", "content": query}
-        ]
-    )
-    return {"answer": response["choices"][0]["message"]["content"]}
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "user", "content": query}
+            ]
+        )
+
+        return {
+            "answer": response.choices[0].message.content
+        }
+
+    except Exception as e:
+        print("❌ ERROR:", e)
+        raise HTTPException(status_code=500, detail=str(e))
