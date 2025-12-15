@@ -4,8 +4,9 @@ pipeline {
     stages {
         stage('AI DevOps Support') {
             steps {
-                sh '''
-                  curl -s "http://localhost:8000/chat?query=jenkins build failed"
+                bat '''
+                  echo Calling AI DevOps Chatbot...
+                  curl "http://localhost:8000/chat?query=jenkins build failed"
                 '''
             }
         }
