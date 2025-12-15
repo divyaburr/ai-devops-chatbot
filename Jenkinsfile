@@ -12,8 +12,10 @@ pipeline {
             steps {
                 bat '''
                 echo Starting AI Chatbot...
-                start /B python app.py
-                timeout /t 5
+                REM Start Python server in a new window without blocking
+                start "" cmd /c python app.py
+                REM Give it a few seconds to start
+                timeout /t 10
                 '''
             }
         }
